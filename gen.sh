@@ -3,7 +3,7 @@ echo "'./gen.sh' to build './gen.sh p' to build and preview"
 
 java -jar ./static-app.jar --build
 
-if [ $# -eq 1 ] 
+if [ $# -eq 1 ]
 then
     if [ "$1" = "p" ]
     then

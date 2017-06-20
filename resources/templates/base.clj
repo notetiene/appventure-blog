@@ -1,21 +1,40 @@
-; This contains base defintions that will be available in all enlive templates.
-; They will be registered in static.core/
+;;; base.clj --- This contains base defintions that will be available
+;;; in all enlive templates.
+;; Keywords: templates, enlive, vase
+;; Last-Updated: Tue Jun 20 16:52:02 (EDT) 2017 by etienne
+;; Created: 2017-06-20
 
-; metadata is a dictionary of
-; :categories -> {:name :url} all the tags in the project
-; :projects -> {:name :url} all the sites / projects under sites
-; :config -> the site config dictionary
-; :type can be :post or :site or :nopost (?)
-; :pager -> {:older "link" :newer "link"} (only on pages with pages)
+;; License: Eclipse Public License
 
-; content is a vector of dictionaries:
-; :id
-; :title
-; :content
-; :url
-; :content
-; :keywords / tags
-; :footnotes
+;; Copyright (c) 2017 Etienne Prud’homme
+
+;; All rights reserved. This program and the accompanying materials
+;; are made available under the terms of the Eclipse Public License
+;; v1.0 which accompanies this distribution, and is available at
+;; http://www.eclipse.org/legal/epl-v10.html
+
+;;; Commentary:
+
+;; Templates will be registered in `static.core/`.
+
+;; metadata is a dictionary of
+;;   :categories -> {:name :url} all the tags in the project
+;;   :projects -> {:name :url} all the sites / projects under sites
+;;   :config -> the site config dictionary
+;;   :type can be :post or :site or :nopost (?)
+;;   :pager -> {:older "link" :newer "link"} (only on pages with pages)
+
+
+;; content is a vector of dictionaries:
+;;   :id
+;;   :title
+;;   :content
+;;   :url
+;;   :content
+;;   :keywords / tags
+;;   :footnotes
+
+;;; Code:
 
 (def base-template-file (static.core/template-path "_index.html"))
 
@@ -35,7 +54,7 @@
   [{:keys [newer older]}]
   [:#previous-page] (enlive/set-attr :href newer)
   [:#next-page] (enlive/set-attr :href older)
-  ; remove the previous or next pager when we don't need them
+  ;; Remove the previous or next pager when we don't need them
   [:#previous-page] #(when newer %)
   [:#next-page] #(when older %))
 
@@ -70,20 +89,23 @@
   [:#swiftblogs :> :div :> :ul :> enlive/first-child]
   [{:keys [title url keyword-keywords]}]
   [:a] (enlive/do->
-         (enlive/set-attr :href url)
-         (enlive/content title))) ;title
+        (enlive/set-attr :href url)
+        ;; Title
+        (enlive/content title)))
 
 (enlive/defsnippet template-swift-model base-template-file
   [:#swiftblogs :> :div]
   [items]
-  [:div :> :ul] (enlive/content (map template-swift-link
-                                  (reverse (filter #(and (some #{:swift} (:keyword-tags %))
-                                                      (some #{:feature} (:keyword-keywords %))) items)))))
+  [:div :> :ul] (enlive/content
+                 (map template-swift-link
+                      (reverse (filter #(and (some #{:swift} (:keyword-tags %))
+                                             (some #{:feature} (:keyword-keywords %))) items)))))
 
 (enlive/defsnippet template-project-model  base-template-file
   [:#projects :> :li.project-template]
   [{:keys [project link]}]
-  [:li] (enlive/remove-attr :class) ;remove the class as we filter the template based on it
+  ;; Remove the class as we filter the template based on it
+  [:li] (enlive/remove-attr :class)
   [:a] (enlive/do->
         (enlive/set-attr :href link)
         (enlive/content project)))
@@ -93,56 +115,65 @@
   [metadata content-metadata]
   [[:meta (enlive/attr= :content "template")]]
   (let [entries [{:key :name :name "description" :value (:description metadata)}
-                  {:key :name :name "keywords" :value (:tags metadata)}
-                  {:key :name :name "author" :value (:author metadata)}
-                  {:key :property :name "og:title" :value (:title metadata)}
-                  {:key :property :name "og:description" :value (:description metadata)}
-                  {:key :property :name "og:url" :value (str "http://appventure.me" (:url metadata))}
-                  {:key :name :name "twitter:title" :value (:title metadata)}
-                  {:key :name :name "twitter:description" :value (:description metadata)}]
+                 {:key :name :name "keywords" :value (:tags metadata)}
+                 {:key :name :name "author" :value (:author metadata)}
+                 {:key :property :name "og:title" :value (:title metadata)}
+                 {:key :property :name "og:description" :value (:description metadata)}
+                 {:key :property :name "og:url" :value (str "http://appventure.me" (:url metadata))}
+                 {:key :name :name "twitter:title" :value (:title metadata)}
+                 {:key :name :name "twitter:description" :value (:description metadata)}]
 
-         entries (if (not (nil? (:feature-image metadata)))
-                   ;; if we have a feature image, use the big image template
-                   (into entries [{:key :name :name "twitter:card" :value "summary_large_image"}
-                                   {:key :name :name "twitter:image" :value (str "http://appventure.me" (:feature-image metadata))}
-                                   {:key :property :name "og:image" :value (str "http://appventure.me" (:feature-image metadata))}
-                                   ])
-                   ;; otherwise, use the description template
-                   (if (not (nil? (:static-feature-image metadata)))
-                     ;; if we have a feature image, use the big image template
-                     (into entries [{:key :name :name "twitter:card" :value "summary_large_image"}
-                                     {:key :name :name "twitter:image" :value (:static-feature-image metadata)}
-                                     {:key :property :name "og:image" :value (:static-feature-image metadata)}
-                                     ])
-                     ;; otherwise, use the description template
-                     (into entries [{:key :name :name "twitter:card" :value "summary"}
-                                     {:key :name :name "twitter:image" :value "http://appventure.me/img/ez@2x.png"}
-                                     {:key :property :name "og:image" :value "http://appventure.me/img/ez@2x.png"}])
-                     )
-                   )]
+        entries (if (not (nil? (:feature-image metadata)))
+                  ;; If we have a feature image, use the big image template
+                  (into entries [{:key :name :name "twitter:card"
+                                  :value "summary_large_image"}
+                                 {:key :name :name "twitter:image"
+                                  :value (str "http://appventure.me" (:feature-image metadata))}
+                                 {:key :property :name "og:image"
+                                  :value (str "http://appventure.me" (:feature-image metadata))}])
+                  ;; Otherwise, use the description template
+                  (if (not (nil? (:static-feature-image metadata)))
+                    ;; If we have a feature image, use the big image template
+                    (into entries [{:key :name :name "twitter:card"
+                                    :value "summary_large_image"}
+                                   {:key :name :name "twitter:image"
+                                    :value (:static-feature-image metadata)}
+                                   {:key :property :name "og:image"
+                                    :value (:static-feature-image metadata)}])
+                    ;; Otherwise, use the description template
+                    (into entries [{:key :name :name "twitter:card"
+                                    :value "summary"}
+                                   {:key :name :name "twitter:image"
+                                    :value "http://appventure.me/img/ez@2x.png"}
+                                   {:key :property :name "og:image"
+                                    :value "http://appventure.me/img/ez@2x.png"}])))]
     (enlive/clone-for [{:keys [key name value]} entries]
-      (enlive/do->
-        (enlive/remove-attr :name :property)
-        (enlive/set-attr key name)
-        (enlive/set-attr :content value))))
+                      (enlive/do->
+                       (enlive/remove-attr :name :property)
+                       (enlive/set-attr key name)
+                       (enlive/set-attr :content value))))
 
-     ; Next, the RSS Link
-     [[:link (enlive/attr= :rel "alternate" :title "rsstemplate")]]
-     (enlive/set-attr :title (:site-title (static.config/config)))
+  ;; Next, the RSS Link
+  [[:link (enlive/attr= :rel "alternate" :title "rsstemplate")]]
+  (enlive/set-attr :title (:site-title (static.config/config)))
 
-     ; The title
-     [:title] (enlive/content (if-let [t (:title metadata)] t (:site-title metadata)))
+  ;; The title
+  [:title] (enlive/content (if-let [t (:title metadata)] t (:site-title metadata)))
 
   [:script]
   (if (not (nil? (:watching metadata)))
     (enlive/clone-for [{:keys [url]} [{:url "/js/live.js"}]]
-      (enlive/do->
-        (enlive/set-attr :src url)))
+                      (enlive/do->
+                       (enlive/set-attr :src url)))
     identity)
 
-     ; If we're in development mode, render live js
-     ;[:head] (enlive/append (if true (enlive/html-content "<script src='/js/live.js'></script>") ""))
-
-  ;[:head] (enlive/append (enlive/html-content "<script src='/js/live.js'></script>"))
+  ;; If we're in development mode, render live js
+  ;; [:head] (enlive/append (if true (enlive/html-content "<script src='/js/live.js'></script>") ""))
+  ;; [:head] (enlive/append (enlive/html-content "<script src='/js/live.js'></script>"))
   )
 
+;;; base.clj<templates> ends here
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
