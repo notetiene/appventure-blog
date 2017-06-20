@@ -1,10 +1,10 @@
-[:site-title "Appventure" ; The default title of the pages
+[:site-title "Etienne.cc" ; The default title of the pages
  :site-title-page " - Page %s" ; The extension for older pages
  :site-title-tag " - Tag %s" ; The extension for tags
- :site-description "Documenting my technology research"
- :site-url "http://appventure.me"
- :site-default-keywords "clojure objective-c cocoa javascript clojurescript html c ios mac photodesk stylemac benedikt terhechte research"
- :site-author "Benedikt Terhechte"
+ :site-description "Front-End Dev"
+ :site-url "http://etienne.cc"
+ :site-default-keywords "javascript ecmascript html emacs lisp clojure clojurescript c etienne prud’homme"
+ :site-author "Etienne Prud’homme"
  :in-dir "resources/"
  :out-dir "html/"
  :default-template "default.clj"
